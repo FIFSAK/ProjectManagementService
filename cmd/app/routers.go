@@ -13,12 +13,12 @@ func SetupRouter(router *mux.Router, userModel *models.UserModel) {
 	usersRouter := router.PathPrefix("/users").Subrouter()
 
 	usersRouter.HandleFunc("", handlers.GetAllUsersHandler(userModel)).Methods(http.MethodGet)
-	usersRouter.HandleFunc("", handlers.CreateUserHandler).Methods(http.MethodPost)
-	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.GetUserHandler).Methods(http.MethodGet)
-	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateUserHandler).Methods(http.MethodPut)
-	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteUserHandler).Methods(http.MethodDelete)
-	usersRouter.HandleFunc("/{id:[0-9]+}/tasks", handlers.GetUserTasksHandler).Methods(http.MethodGet)
-	usersRouter.HandleFunc("/search", handlers.SearchUserHandler).Methods(http.MethodPost)
+	usersRouter.HandleFunc("", handlers.CreateUserHandler(userModel)).Methods(http.MethodPost)
+	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.GetUserHandler(userModel)).Methods(http.MethodGet)
+	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateUserHandler(userModel)).Methods(http.MethodPut)
+	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteUserHandler(userModel)).Methods(http.MethodDelete)
+	usersRouter.HandleFunc("/{id:[0-9]+}/tasks", handlers.GetUserTasksHandler(userModel)).Methods(http.MethodGet)
+	usersRouter.HandleFunc("/search", handlers.SearchUserHandler(userModel)).Methods(http.MethodGet)
 
 	tasksRouter := router.PathPrefix("/tasks").Subrouter()
 
