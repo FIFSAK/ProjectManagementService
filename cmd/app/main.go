@@ -26,10 +26,11 @@ func main() {
 		}
 	}(db)
 	userModel := models.NewUserModel(db)
+	taskModel := models.NewTaskModel(db)
 
 	router := mux.NewRouter()
 
-	SetupRouter(router, userModel)
+	SetupRouter(router, userModel, taskModel)
 
 	port := "8080"
 	server := &http.Server{

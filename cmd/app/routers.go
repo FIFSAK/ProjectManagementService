@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func SetupRouter(router *mux.Router, userModel *models.UserModel) {
+func SetupRouter(router *mux.Router, userModel *models.UserModel, taskModel *models.TaskModel) {
 	router.HandleFunc("/health-check", handlers.HealthCheck).Methods(http.MethodGet)
 
 	usersRouter := router.PathPrefix("/users").Subrouter()
@@ -22,12 +22,12 @@ func SetupRouter(router *mux.Router, userModel *models.UserModel) {
 
 	tasksRouter := router.PathPrefix("/tasks").Subrouter()
 
-	tasksRouter.HandleFunc("", handlers.GetAllTasksHandler).Methods(http.MethodGet)
-	tasksRouter.HandleFunc("", handlers.CreateTaskHandler).Methods(http.MethodPost)
-	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.GetTaskHandler).Methods(http.MethodGet)
-	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateTaskHandler).Methods(http.MethodPut)
-	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteTaskHandler).Methods(http.MethodDelete)
-	tasksRouter.HandleFunc("/search", handlers.SearchTasksHandler).Methods(http.MethodPut)
+	tasksRouter.HandleFunc("", handlers.GetAllTasksHandler(taskModel)).Methods(http.MethodGet)
+	tasksRouter.HandleFunc("", handlers.CreateTaskHandler(taskModel)).Methods(http.MethodPost)
+	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.GetTaskHandler(taskModel)).Methods(http.MethodGet)
+	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateTaskHandler(taskModel)).Methods(http.MethodPut)
+	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteTaskHandler(taskModel)).Methods(http.MethodDelete)
+	tasksRouter.HandleFunc("/search", handlers.SearchTasksHandler(taskModel)).Methods(http.MethodGet)
 
 	projectsRouter := router.PathPrefix("/projects").Subrouter()
 
