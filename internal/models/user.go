@@ -149,9 +149,15 @@ func (m *UserModel) GetUserTasks(id int) ([]*Task, error) {
 	tasks := make([]*Task, 0)
 	for rows.Next() {
 		task := &Task{}
-		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Priority, &task.Status, &task.ResponsibleUserID, &task.ProjectID, &task.CreationDate, &task.CompletionDate)
+		var completionDate sql.NullString
+		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Priority, &task.Status, &task.ResponsibleUserID, &task.ProjectID, &task.CreationDate, &completionDate)
 		if err != nil {
 			return nil, err
+		}
+		if completionDate.Valid {
+			task.CompletionDate = completionDate.String
+		} else {
+			task.CompletionDate = ""
 		}
 		tasks = append(tasks, task)
 	}
