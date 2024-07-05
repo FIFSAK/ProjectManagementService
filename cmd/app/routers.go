@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func SetupRouter(router *mux.Router, userModel *models.UserModel, taskModel *models.TaskModel) {
+func SetupRouter(router *mux.Router, userModel *models.UserModel, taskModel *models.TaskModel, projectModel *models.ProjectModel) {
 	router.HandleFunc("/health-check", handlers.HealthCheck).Methods(http.MethodGet)
 
 	usersRouter := router.PathPrefix("/users").Subrouter()
@@ -31,11 +31,11 @@ func SetupRouter(router *mux.Router, userModel *models.UserModel, taskModel *mod
 
 	projectsRouter := router.PathPrefix("/projects").Subrouter()
 
-	projectsRouter.HandleFunc("", handlers.GetAllProjectsHandler).Methods(http.MethodGet)
-	projectsRouter.HandleFunc("", handlers.CreateProjectHandler).Methods(http.MethodPost)
-	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.GetProjectHandler).Methods(http.MethodGet)
-	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateProjectHandler).Methods(http.MethodPut)
-	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteProjectHandler).Methods(http.MethodDelete)
-	projectsRouter.HandleFunc("/{id:[0-9]+}/tasks", handlers.GetProjectTasksHandler).Methods(http.MethodGet)
-	projectsRouter.HandleFunc("/search", handlers.SearchProjectsHandler).Methods(http.MethodPut)
+	projectsRouter.HandleFunc("", handlers.GetAllProjectsHandler(projectModel)).Methods(http.MethodGet)
+	projectsRouter.HandleFunc("", handlers.CreateProjectHandler(projectModel)).Methods(http.MethodPost)
+	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.GetProjectHandler(projectModel)).Methods(http.MethodGet)
+	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateProjectHandler(projectModel)).Methods(http.MethodPut)
+	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteProjectHandler(projectModel)).Methods(http.MethodDelete)
+	projectsRouter.HandleFunc("/{id:[0-9]+}/tasks", handlers.GetProjectTasksHandler(projectModel)).Methods(http.MethodGet)
+	projectsRouter.HandleFunc("/search", handlers.SearchProjectsHandler(projectModel)).Methods(http.MethodGet)
 }
