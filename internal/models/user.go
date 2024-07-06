@@ -81,12 +81,14 @@ func (m *UserModel) UpdateUser(id int, name string, email string, role string) e
 	return nil
 }
 
-func (m *UserModel) DeleteUser(id int) error {
-	_, err := m.DB.Exec("DELETE FROM users WHERE id = $1", id)
+func (m *UserModel) DeleteUser(id int) (int, error) {
+	row := m.DB.QueryRow("DELETE FROM users WHERE id = $1 RETURNING id", id)
+	var deletedId int
+	err := row.Scan(&deletedId)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return id, nil
 }
 
 func (m *UserModel) SearchUserByEmail(email string) ([]*User, error) {

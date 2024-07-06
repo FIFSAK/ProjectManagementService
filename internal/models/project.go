@@ -76,12 +76,14 @@ func (pm *ProjectModel) UpdateProject(id int, title, description string, manager
 	return nil
 }
 
-func (pm *ProjectModel) DeleteProject(id int) error {
-	_, err := pm.DB.Exec("DELETE FROM projects WHERE id = $1", id)
+func (pm *ProjectModel) DeleteProject(id int) (int, error) {
+	row := pm.DB.QueryRow("DELETE FROM projects WHERE id = $1", id)
+	var deletedId int
+	err := row.Scan(&deletedId)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return deletedId, nil
 }
 
 func (pm *ProjectModel) GetProjectTasks(id int) ([]Task, error) {

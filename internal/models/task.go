@@ -95,12 +95,14 @@ func (m *TaskModel) UpdateTask(id int, title, description string, priority Prior
 	return nil
 }
 
-func (m *TaskModel) DeleteTask(id int) error {
-	_, err := m.DB.Exec("DELETE FROM tasks WHERE id = $1", id)
+func (m *TaskModel) DeleteTask(id int) (int, error) {
+	row := m.DB.QueryRow("DELETE FROM tasks WHERE id = $1 returning id", id)
+	var deletedId int
+	err := row.Scan(&deletedId)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return deletedId, nil
 }
 
 func (m *TaskModel) SearchTaskByTitle(title string) ([]*Task, error) {

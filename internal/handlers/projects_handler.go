@@ -15,7 +15,12 @@ func GetAllProjectsHandler(projectModel *models.ProjectModel) http.HandlerFunc {
 			http.Error(writer, "could not get projects: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if len(projects) == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
 		err = json.NewEncoder(writer).Encode(projects)
 		if err != nil {
 			http.Error(writer, "could not encode projects: "+err.Error(), http.StatusInternalServerError)
@@ -52,11 +57,20 @@ func GetProjectHandler(projectModel *models.ProjectModel) http.HandlerFunc {
 			return
 		}
 		project, err := projectModel.GetProjectByID(id)
+		if project == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if project == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
 		err = json.NewEncoder(writer).Encode(project)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -75,6 +89,10 @@ func UpdateProjectHandler(projectModel *models.ProjectModel) http.HandlerFunc {
 			return
 		}
 		project, err := projectModel.GetProjectByID(id)
+		if project == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
@@ -102,7 +120,11 @@ func DeleteProjectHandler(projectModel *models.ProjectModel) http.HandlerFunc {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err = projectModel.DeleteProject(id)
+		deletedId, err := projectModel.DeleteProject(id)
+		if deletedId == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
@@ -125,7 +147,12 @@ func GetProjectTasksHandler(projectModel *models.ProjectModel) http.HandlerFunc 
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if len(tasks) == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
 		err = json.NewEncoder(writer).Encode(tasks)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -139,37 +166,42 @@ func SearchProjectsHandler(projectModel *models.ProjectModel) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		title := request.URL.Query().Get("title")
 		manager := request.URL.Query().Get("manager")
+		var (
+			projects []models.Project
+			err      error
+		)
 		if title != "" {
-			projects, err := projectModel.SearchProjectsByTitle(title)
+			projects, err = projectModel.SearchProjectsByTitle(title)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
-			err = json.NewEncoder(writer).Encode(projects)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
-				return
-			}
+
 		} else if manager != "" {
 			managerID, err := strconv.Atoi(manager)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				return
 			}
-			writer.Header().Set("Content-Type", "application/json")
-			projects, err := projectModel.SearchProjectsByManagerID(managerID)
+			projects, err = projectModel.SearchProjectsByManagerID(managerID)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			err = json.NewEncoder(writer).Encode(projects)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
-				return
-			}
+
 		} else {
 			http.Error(writer, "invalid search parameters", http.StatusBadRequest)
+			return
+		}
+		if len(projects) == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		err = json.NewEncoder(writer).Encode(projects)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}

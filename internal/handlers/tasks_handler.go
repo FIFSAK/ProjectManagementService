@@ -15,6 +15,10 @@ func GetAllTasksHandler(taskModel *models.TaskModel) http.HandlerFunc {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if len(tasks) == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		jsonTasks, err := json.Marshal(tasks)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -22,6 +26,7 @@ func GetAllTasksHandler(taskModel *models.TaskModel) http.HandlerFunc {
 
 		}
 		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
 		_, err = writer.Write(jsonTasks)
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -57,8 +62,16 @@ func GetTaskHandler(taskModel *models.TaskModel) http.HandlerFunc {
 			return
 		}
 		task, err := taskModel.GetTaskById(id)
+		if task == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if task == nil {
+			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
 		jsonTask, err := json.Marshal(task)
@@ -67,6 +80,7 @@ func GetTaskHandler(taskModel *models.TaskModel) http.HandlerFunc {
 			return
 		}
 		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
 		_, err = writer.Write(jsonTask)
 	}
 
@@ -81,6 +95,10 @@ func UpdateTaskHandler(taskModel *models.TaskModel) http.HandlerFunc {
 			return
 		}
 		task, err := taskModel.GetTaskById(id)
+		if task == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
@@ -109,7 +127,11 @@ func DeleteTaskHandler(taskModel *models.TaskModel) http.HandlerFunc {
 			http.Error(writer, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err = taskModel.DeleteTask(id)
+		deletedId, err := taskModel.DeleteTask(id)
+		if deletedId == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
 			return
@@ -130,19 +152,22 @@ func SearchTasksHandler(taskModel *models.TaskModel) http.HandlerFunc {
 
 		project := request.URL.Query().Get("project")
 
+		if title == "" && status == "" && priority == "" && assignee == "" && project == "" {
+			http.Error(writer, "No search parameters provided", http.StatusBadRequest)
+			return
+		}
+
+		var (
+			tasks []*models.Task
+			err   error
+		)
 		if title != "" {
-			tasks, err := taskModel.SearchTaskByTitle(title)
+			tasks, err = taskModel.SearchTaskByTitle(title)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			jsonTasks, err := json.Marshal(tasks)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writer.Header().Set("Content-Type", "application/json")
-			_, err = writer.Write(jsonTasks)
+
 		}
 		if status != "" {
 			var statusEnumValue models.StatusEnum
@@ -157,18 +182,12 @@ func SearchTasksHandler(taskModel *models.TaskModel) http.HandlerFunc {
 				http.Error(writer, "Invalid status", http.StatusBadRequest)
 				return
 			}
-			tasks, err := taskModel.SearchTaskByStatus(statusEnumValue)
+			tasks, err = taskModel.SearchTaskByStatus(statusEnumValue)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			jsonTasks, err := json.Marshal(tasks)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writer.Header().Set("Content-Type", "application/json")
-			_, err = writer.Write(jsonTasks)
+
 		}
 		if priority != "" {
 			var priorityEnumValue models.PriorityEnum
@@ -180,18 +199,12 @@ func SearchTasksHandler(taskModel *models.TaskModel) http.HandlerFunc {
 			case string(models.High):
 				priorityEnumValue = models.High
 			}
-			tasks, err := taskModel.SearchTaskByPriority(priorityEnumValue)
+			tasks, err = taskModel.SearchTaskByPriority(priorityEnumValue)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			jsonTasks, err := json.Marshal(tasks)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writer.Header().Set("Content-Type", "application/json")
-			_, err = writer.Write(jsonTasks)
+
 		}
 		if assignee != "" {
 			assigneeId, err := strconv.Atoi(assignee)
@@ -199,18 +212,12 @@ func SearchTasksHandler(taskModel *models.TaskModel) http.HandlerFunc {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				return
 			}
-			tasks, err := taskModel.SearchTaskByResponsibleUserID(assigneeId)
+			tasks, err = taskModel.SearchTaskByResponsibleUserID(assigneeId)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			jsonTasks, err := json.Marshal(tasks)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writer.Header().Set("Content-Type", "application/json")
-			_, err = writer.Write(jsonTasks)
+
 		}
 		if project != "" {
 			projectId, err := strconv.Atoi(project)
@@ -218,19 +225,24 @@ func SearchTasksHandler(taskModel *models.TaskModel) http.HandlerFunc {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				return
 			}
-			tasks, err := taskModel.SearchTaskByProjectID(projectId)
+			tasks, err = taskModel.SearchTaskByProjectID(projectId)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			jsonTasks, err := json.Marshal(tasks)
-			if err != nil {
-				http.Error(writer, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			writer.Header().Set("Content-Type", "application/json")
-			_, err = writer.Write(jsonTasks)
 		}
+		if len(tasks) == 0 {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+		jsonTasks, err := json.Marshal(tasks)
+		if err != nil {
+			http.Error(writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		_, err = writer.Write(jsonTasks)
 
 	}
 
