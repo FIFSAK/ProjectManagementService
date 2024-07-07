@@ -56,18 +56,19 @@ func migrationUp(db *sql.DB) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	//m, err := migrate.NewWithDatabaseInstance(
 	//	"file:///usr/src/app/migrations",
 	//	"postgres", driver)
+
+	//
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://migrations",
 		"postgres", driver)
+	//
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// apply migrations
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal(err)
 	}
