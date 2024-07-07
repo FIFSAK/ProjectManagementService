@@ -13,8 +13,6 @@ services:
       DB_NAME: ${dbname}
       DB_HOST: ${host}
       DB_PORT: 5432
-    networks:
-      - project_network
 
   db:
     container_name: project_management_db
@@ -27,10 +25,6 @@ services:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
-    networks:
-      - project_network
 
-networks:
-  project_network:
 volumes:
   db-data:
