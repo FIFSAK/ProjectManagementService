@@ -35,11 +35,9 @@ func initializeDB() (*sql.DB, error) {
 	//migrationUp(db)
 	//
 	//return db, nil
-	connStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		os.Getenv("host"), os.Getenv("port"), os.Getenv("user"),
-		os.Getenv("password"), os.Getenv("dbname"), os.Getenv("sslmode"),
-	)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		os.Getenv("user"), os.Getenv("password"), os.Getenv("host"),
+		os.Getenv("port"), os.Getenv("dbname"))
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
@@ -60,12 +58,12 @@ func migrationUp(db *sql.DB) {
 	}
 
 	// Путь к файлам миграции
-	//m, err := migrate.NewWithDatabaseInstance(
-	//	"file:///usr/src/app/internal/migrations",
-	//	"postgres", driver)
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		"file:///usr/src/app/migrations",
 		"postgres", driver)
+	//m, err := migrate.NewWithDatabaseInstance(
+	//	"file://migrations",
+	//	"postgres", driver)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,4 +72,5 @@ func migrationUp(db *sql.DB) {
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal(err)
 	}
+	fmt.Println("migrations up")
 }

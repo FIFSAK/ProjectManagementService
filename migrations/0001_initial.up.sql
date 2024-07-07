@@ -1,3 +1,6 @@
+create type task_priority as enum ('low', 'medium', 'high');
+create type task_status as enum ('new', 'in_progress', 'done');
+
 create table if not exists users(
     id serial primary key,
     name varchar(255),
