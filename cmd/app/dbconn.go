@@ -33,7 +33,7 @@ func initializeDB() (*sql.DB, error) {
 	//}
 	//
 	//migrationUp(db)
-	//
+
 	//return db, nil
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("user"), os.Getenv("password"), os.Getenv("host"),
@@ -57,16 +57,15 @@ func migrationUp(db *sql.DB) {
 		log.Fatal(err)
 	}
 
-	// Путь к файлам миграции
 	m, err := migrate.NewWithDatabaseInstance(
 		"file:///usr/src/app/migrations",
 		"postgres", driver)
 	//m, err := migrate.NewWithDatabaseInstance(
 	//	"file://migrations",
 	//	"postgres", driver)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	// apply migrations
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
