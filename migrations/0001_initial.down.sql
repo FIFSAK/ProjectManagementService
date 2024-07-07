@@ -1,8 +1,9 @@
-DROP TABLE IF EXISTS users;
-
 DROP TABLE IF EXISTS tasks;
 
 DROP TABLE IF EXISTS projects;
 
-drop type if exists task_priority;
-drop type if exists task_status;
+DROP TABLE IF EXISTS users;
+
+DROP TYPE IF EXISTS task_priority;
+
+DROP TYPE IF EXISTS task_status;
