@@ -2,40 +2,39 @@ package main
 
 import (
 	"ProjectManagementService/internal/handlers"
-	"ProjectManagementService/internal/models"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-func SetupRouter(router *mux.Router, userModel *models.UserModel, taskModel *models.TaskModel, projectModel *models.ProjectModel) {
+func SetupRouter(router *mux.Router, userHandler *handlers.UserHandler, taskHandler *handlers.TaskHandler, projectHandler *handlers.ProjectHandler) {
 	router.HandleFunc("/health-check", handlers.HealthCheck).Methods(http.MethodGet)
 
 	usersRouter := router.PathPrefix("/users").Subrouter()
 
-	usersRouter.HandleFunc("", handlers.GetAllUsersHandler(userModel)).Methods(http.MethodGet)
-	usersRouter.HandleFunc("", handlers.CreateUserHandler(userModel)).Methods(http.MethodPost)
-	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.GetUserHandler(userModel)).Methods(http.MethodGet)
-	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateUserHandler(userModel)).Methods(http.MethodPut)
-	usersRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteUserHandler(userModel)).Methods(http.MethodDelete)
-	usersRouter.HandleFunc("/{id:[0-9]+}/tasks", handlers.GetUserTasksHandler(userModel)).Methods(http.MethodGet)
-	usersRouter.HandleFunc("/search", handlers.SearchUserHandler(userModel)).Methods(http.MethodGet)
+	usersRouter.HandleFunc("", userHandler.GetAllUsersHandler).Methods(http.MethodGet)
+	usersRouter.HandleFunc("", userHandler.CreateUserHandler).Methods(http.MethodPost)
+	usersRouter.HandleFunc("/{id:[0-9]+}", userHandler.GetUserHandler).Methods(http.MethodGet)
+	usersRouter.HandleFunc("/{id:[0-9]+}", userHandler.UpdateUserHandler).Methods(http.MethodPut)
+	usersRouter.HandleFunc("/{id:[0-9]+}", userHandler.DeleteUserHandler).Methods(http.MethodDelete)
+	usersRouter.HandleFunc("/{id:[0-9]+}/tasks", userHandler.GetUserTasksHandler).Methods(http.MethodGet)
+	usersRouter.HandleFunc("/search", userHandler.SearchUserHandler).Methods(http.MethodGet)
 
 	tasksRouter := router.PathPrefix("/tasks").Subrouter()
 
-	tasksRouter.HandleFunc("", handlers.GetAllTasksHandler(taskModel)).Methods(http.MethodGet)
-	tasksRouter.HandleFunc("", handlers.CreateTaskHandler(taskModel)).Methods(http.MethodPost)
-	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.GetTaskHandler(taskModel)).Methods(http.MethodGet)
-	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateTaskHandler(taskModel)).Methods(http.MethodPut)
-	tasksRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteTaskHandler(taskModel)).Methods(http.MethodDelete)
-	tasksRouter.HandleFunc("/search", handlers.SearchTasksHandler(taskModel)).Methods(http.MethodGet)
+	tasksRouter.HandleFunc("", taskHandler.GetAllTasksHandler).Methods(http.MethodGet)
+	tasksRouter.HandleFunc("", taskHandler.CreateTaskHandler).Methods(http.MethodPost)
+	tasksRouter.HandleFunc("/{id:[0-9]+}", taskHandler.GetTaskHandler).Methods(http.MethodGet)
+	tasksRouter.HandleFunc("/{id:[0-9]+}", taskHandler.UpdateTaskHandler).Methods(http.MethodPut)
+	tasksRouter.HandleFunc("/{id:[0-9]+}", taskHandler.DeleteTaskHandler).Methods(http.MethodDelete)
+	tasksRouter.HandleFunc("/search", taskHandler.SearchTasksHandler).Methods(http.MethodGet)
 
 	projectsRouter := router.PathPrefix("/projects").Subrouter()
 
-	projectsRouter.HandleFunc("", handlers.GetAllProjectsHandler(projectModel)).Methods(http.MethodGet)
-	projectsRouter.HandleFunc("", handlers.CreateProjectHandler(projectModel)).Methods(http.MethodPost)
-	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.GetProjectHandler(projectModel)).Methods(http.MethodGet)
-	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.UpdateProjectHandler(projectModel)).Methods(http.MethodPut)
-	projectsRouter.HandleFunc("/{id:[0-9]+}", handlers.DeleteProjectHandler(projectModel)).Methods(http.MethodDelete)
-	projectsRouter.HandleFunc("/{id:[0-9]+}/tasks", handlers.GetProjectTasksHandler(projectModel)).Methods(http.MethodGet)
-	projectsRouter.HandleFunc("/search", handlers.SearchProjectsHandler(projectModel)).Methods(http.MethodGet)
+	projectsRouter.HandleFunc("", projectHandler.GetAllProjectsHandler).Methods(http.MethodGet)
+	projectsRouter.HandleFunc("", projectHandler.CreateProjectHandler).Methods(http.MethodPost)
+	projectsRouter.HandleFunc("/{id:[0-9]+}", projectHandler.GetProjectHandler).Methods(http.MethodGet)
+	projectsRouter.HandleFunc("/{id:[0-9]+}", projectHandler.UpdateProjectHandler).Methods(http.MethodPut)
+	projectsRouter.HandleFunc("/{id:[0-9]+}", projectHandler.DeleteProjectHandler).Methods(http.MethodDelete)
+	projectsRouter.HandleFunc("/{id:[0-9]+}/tasks", projectHandler.GetProjectTasksHandler).Methods(http.MethodGet)
+	projectsRouter.HandleFunc("/search", projectHandler.SearchProjectsHandler).Methods(http.MethodGet)
 }

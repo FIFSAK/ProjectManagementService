@@ -29,15 +29,28 @@ type Task struct {
 	CompletionDate    string       `json:"completion_date"`
 }
 
-type TaskModel struct {
+type TaskModel interface {
+	GetTasks() ([]*Task, error)
+	CreateTask(title, description string, priority PriorityEnum, status StatusEnum, responsibleUserID, projectID int) error
+	GetTaskById(id int) (*Task, error)
+	UpdateTask(id int, title, description string, priority PriorityEnum, status StatusEnum, responsibleUserID, projectID int) error
+	DeleteTask(id int) (int, error)
+	SearchTaskByTitle(title string) ([]*Task, error)
+	SearchTaskByStatus(status StatusEnum) ([]*Task, error)
+	SearchTaskByPriority(priority PriorityEnum) ([]*Task, error)
+	SearchTaskByResponsibleUserID(responsibleUserID int) ([]*Task, error)
+	SearchTaskByProjectID(projectID int) ([]*Task, error)
+}
+
+type TaskModelImpl struct {
 	DB *sql.DB
 }
 
-func NewTaskModel(db *sql.DB) *TaskModel {
-	return &TaskModel{DB: db}
+func NewTaskModel(db *sql.DB) *TaskModelImpl {
+	return &TaskModelImpl{DB: db}
 }
 
-func (m *TaskModel) GetTasks() ([]*Task, error) {
+func (m *TaskModelImpl) GetTasks() ([]*Task, error) {
 	rows, err := m.DB.Query("SELECT * FROM tasks")
 	if err != nil {
 		return nil, err
@@ -65,7 +78,7 @@ func (m *TaskModel) GetTasks() ([]*Task, error) {
 
 }
 
-func (m *TaskModel) CreateTask(title, description string, priority PriorityEnum, status StatusEnum, responsibleUserID, projectID int) error {
+func (m *TaskModelImpl) CreateTask(title, description string, priority PriorityEnum, status StatusEnum, responsibleUserID, projectID int) error {
 	_, err := m.DB.Exec("INSERT INTO tasks (title, description, priority, status, responsible_user_id, project_id) VALUES ($1, $2, $3, $4, $5, $6)", title, description, priority, status, responsibleUserID, projectID)
 	if err != nil {
 		return err
@@ -73,7 +86,7 @@ func (m *TaskModel) CreateTask(title, description string, priority PriorityEnum,
 	return nil
 }
 
-func (m *TaskModel) GetTaskById(id int) (*Task, error) {
+func (m *TaskModelImpl) GetTaskById(id int) (*Task, error) {
 	row := m.DB.QueryRow("SELECT * FROM tasks WHERE id = $1", id)
 	task := &Task{}
 	var completionDate sql.NullString
@@ -87,7 +100,7 @@ func (m *TaskModel) GetTaskById(id int) (*Task, error) {
 	return task, nil
 }
 
-func (m *TaskModel) UpdateTask(id int, title, description string, priority PriorityEnum, status StatusEnum, responsibleUserID, projectID int) error {
+func (m *TaskModelImpl) UpdateTask(id int, title, description string, priority PriorityEnum, status StatusEnum, responsibleUserID, projectID int) error {
 	_, err := m.DB.Exec("UPDATE tasks SET title = $1, description = $2, priority = $3, status = $4, responsible_user_id = $5, project_id = $6 WHERE id = $7", title, description, priority, status, responsibleUserID, projectID, id)
 	if err != nil {
 		return err
@@ -95,7 +108,7 @@ func (m *TaskModel) UpdateTask(id int, title, description string, priority Prior
 	return nil
 }
 
-func (m *TaskModel) DeleteTask(id int) (int, error) {
+func (m *TaskModelImpl) DeleteTask(id int) (int, error) {
 	row := m.DB.QueryRow("DELETE FROM tasks WHERE id = $1 returning id", id)
 	var deletedId int
 	err := row.Scan(&deletedId)
@@ -105,7 +118,7 @@ func (m *TaskModel) DeleteTask(id int) (int, error) {
 	return deletedId, nil
 }
 
-func (m *TaskModel) SearchTaskByTitle(title string) ([]*Task, error) {
+func (m *TaskModelImpl) SearchTaskByTitle(title string) ([]*Task, error) {
 	rows, err := m.DB.Query("SELECT * FROM tasks WHERE title = $1", title)
 	if err != nil {
 		return nil, err
@@ -132,7 +145,7 @@ func (m *TaskModel) SearchTaskByTitle(title string) ([]*Task, error) {
 	return tasks, nil
 }
 
-func (m *TaskModel) SearchTaskByStatus(status StatusEnum) ([]*Task, error) {
+func (m *TaskModelImpl) SearchTaskByStatus(status StatusEnum) ([]*Task, error) {
 	rows, err := m.DB.Query("SELECT * FROM tasks WHERE status = $1", status)
 	if err != nil {
 		return nil, err
@@ -159,7 +172,7 @@ func (m *TaskModel) SearchTaskByStatus(status StatusEnum) ([]*Task, error) {
 	return tasks, nil
 }
 
-func (m *TaskModel) SearchTaskByPriority(priority PriorityEnum) ([]*Task, error) {
+func (m *TaskModelImpl) SearchTaskByPriority(priority PriorityEnum) ([]*Task, error) {
 	rows, err := m.DB.Query("SELECT * FROM tasks WHERE priority = $1", priority)
 	if err != nil {
 		return nil, err
@@ -186,7 +199,7 @@ func (m *TaskModel) SearchTaskByPriority(priority PriorityEnum) ([]*Task, error)
 	return tasks, nil
 }
 
-func (m *TaskModel) SearchTaskByResponsibleUserID(responsibleUserID int) ([]*Task, error) {
+func (m *TaskModelImpl) SearchTaskByResponsibleUserID(responsibleUserID int) ([]*Task, error) {
 	rows, err := m.DB.Query("SELECT * FROM tasks WHERE responsible_user_id = $1", responsibleUserID)
 	if err != nil {
 		return nil, err
@@ -213,7 +226,7 @@ func (m *TaskModel) SearchTaskByResponsibleUserID(responsibleUserID int) ([]*Tas
 	return tasks, nil
 }
 
-func (m *TaskModel) SearchTaskByProjectID(projectID int) ([]*Task, error) {
+func (m *TaskModelImpl) SearchTaskByProjectID(projectID int) ([]*Task, error) {
 	rows, err := m.DB.Query("SELECT * FROM tasks WHERE project_id = $1", projectID)
 	if err != nil {
 		return nil, err

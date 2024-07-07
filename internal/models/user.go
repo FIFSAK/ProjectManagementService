@@ -13,19 +13,30 @@ type User struct {
 	Role             string `json:"role"`
 }
 
-type UserModel struct {
+type UserModel interface {
+	GetUsers() ([]*User, error)
+	CreateUser(name string, email string, role string) error
+	GetUserById(id int) (*User, error)
+	UpdateUser(id int, name string, email string, role string) error
+	DeleteUser(id int) (int, error)
+	SearchUserByEmail(email string) ([]*User, error)
+	SearchUserByName(name string) ([]*User, error)
+	GetUserTasks(id int) ([]*Task, error)
+}
+
+type UserModelImpl struct {
 	DB *sql.DB
 }
 
-func (m UserModel) Error(s string) error {
+func (m *UserModelImpl) Error(s string) error {
 	return fmt.Errorf(s)
 }
 
-func NewUserModel(db *sql.DB) *UserModel {
-	return &UserModel{DB: db}
+func NewUserModel(db *sql.DB) *UserModelImpl {
+	return &UserModelImpl{DB: db}
 }
 
-func (m *UserModel) GetUsers() ([]*User, error) {
+func (m *UserModelImpl) GetUsers() ([]*User, error) {
 	rows, err := m.DB.Query("SELECT * FROM users")
 	if err != nil {
 		return nil, err
@@ -48,7 +59,7 @@ func (m *UserModel) GetUsers() ([]*User, error) {
 	return users, nil
 
 }
-func (m *UserModel) CreateUser(name string, email string, role string) error {
+func (m *UserModelImpl) CreateUser(name string, email string, role string) error {
 	users, err := m.SearchUserByEmail(email)
 	if err != nil {
 		return err
@@ -65,7 +76,7 @@ func (m *UserModel) CreateUser(name string, email string, role string) error {
 
 }
 
-func (m *UserModel) GetUserById(id int) (*User, error) {
+func (m *UserModelImpl) GetUserById(id int) (*User, error) {
 	user := &User{}
 	err := m.DB.QueryRow("SELECT * FROM users WHERE id = $1", id).Scan(&user.ID, &user.Name, &user.Email, &user.RegistrationDate, &user.Role)
 	if err != nil {
@@ -73,7 +84,7 @@ func (m *UserModel) GetUserById(id int) (*User, error) {
 	}
 	return user, nil
 }
-func (m *UserModel) UpdateUser(id int, name string, email string, role string) error {
+func (m *UserModelImpl) UpdateUser(id int, name string, email string, role string) error {
 	_, err := m.DB.Exec("UPDATE users SET name = $1, email = $2, role = $3 WHERE id = $4", name, email, role, id)
 	if err != nil {
 		return err
@@ -81,7 +92,7 @@ func (m *UserModel) UpdateUser(id int, name string, email string, role string) e
 	return nil
 }
 
-func (m *UserModel) DeleteUser(id int) (int, error) {
+func (m *UserModelImpl) DeleteUser(id int) (int, error) {
 	row := m.DB.QueryRow("DELETE FROM users WHERE id = $1 RETURNING id", id)
 	var deletedId int
 	err := row.Scan(&deletedId)
@@ -91,7 +102,7 @@ func (m *UserModel) DeleteUser(id int) (int, error) {
 	return id, nil
 }
 
-func (m *UserModel) SearchUserByEmail(email string) ([]*User, error) {
+func (m *UserModelImpl) SearchUserByEmail(email string) ([]*User, error) {
 	rows, err := m.DB.Query("SELECT * FROM users WHERE email = $1", email)
 	if err != nil {
 		return nil, err
@@ -114,7 +125,7 @@ func (m *UserModel) SearchUserByEmail(email string) ([]*User, error) {
 	return users, nil
 }
 
-func (m *UserModel) SearchUserByName(name string) ([]*User, error) {
+func (m *UserModelImpl) SearchUserByName(name string) ([]*User, error) {
 	rows, err := m.DB.Query("SELECT * FROM users WHERE name = $1", name)
 	if err != nil {
 		return nil, err
@@ -137,7 +148,7 @@ func (m *UserModel) SearchUserByName(name string) ([]*User, error) {
 	return users, nil
 }
 
-func (m *UserModel) GetUserTasks(id int) ([]*Task, error) {
+func (m *UserModelImpl) GetUserTasks(id int) ([]*Task, error) {
 	rows, err := m.DB.Query("SELECT * FROM tasks WHERE responsible_user_id = $1", id)
 	if err != nil {
 		return nil, err

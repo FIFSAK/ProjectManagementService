@@ -11,15 +11,26 @@ type Project struct {
 	ManagerID      int    `json:"manager_id"`
 }
 
-type ProjectModel struct {
+type ProjectModel interface {
+	GetProjects() ([]Project, error)
+	CreateProject(title, description string, managerID int) error
+	GetProjectByID(id int) (*Project, error)
+	UpdateProject(id int, title, description string, managerID int) error
+	DeleteProject(id int) (int, error)
+	GetProjectTasks(id int) ([]Task, error)
+	SearchProjectsByTitle(title string) ([]Project, error)
+	SearchProjectsByManagerID(managerID int) ([]Project, error)
+}
+
+type ProjectModelImpl struct {
 	DB *sql.DB
 }
 
-func NewProjectModel(db *sql.DB) *ProjectModel {
-	return &ProjectModel{DB: db}
+func NewProjectModel(db *sql.DB) *ProjectModelImpl {
+	return &ProjectModelImpl{DB: db}
 }
 
-func (pm *ProjectModel) GetProjects() ([]Project, error) {
+func (pm *ProjectModelImpl) GetProjects() ([]Project, error) {
 	rows, err := pm.DB.Query("SELECT * FROM projects")
 	if err != nil {
 		return nil, err
@@ -46,7 +57,7 @@ func (pm *ProjectModel) GetProjects() ([]Project, error) {
 	return projects, nil
 }
 
-func (pm *ProjectModel) CreateProject(title, description string, managerID int) error {
+func (pm *ProjectModelImpl) CreateProject(title, description string, managerID int) error {
 	var id int
 	err := pm.DB.QueryRow("INSERT INTO projects (title, description, manager_id) VALUES ($1, $2, $3) RETURNING id", title, description, managerID).Scan(&id)
 	if err != nil {
@@ -55,7 +66,7 @@ func (pm *ProjectModel) CreateProject(title, description string, managerID int) 
 	return nil
 }
 
-func (pm *ProjectModel) GetProjectByID(id int) (*Project, error) {
+func (pm *ProjectModelImpl) GetProjectByID(id int) (*Project, error) {
 	project := Project{}
 	var completionDate sql.NullString
 	err := pm.DB.QueryRow("SELECT * FROM projects WHERE id = $1", id).Scan(&project.ID, &project.Title, &project.Description, &project.CreationDate, &completionDate, &project.ManagerID)
@@ -68,7 +79,7 @@ func (pm *ProjectModel) GetProjectByID(id int) (*Project, error) {
 	return &project, nil
 }
 
-func (pm *ProjectModel) UpdateProject(id int, title, description string, managerID int) error {
+func (pm *ProjectModelImpl) UpdateProject(id int, title, description string, managerID int) error {
 	_, err := pm.DB.Exec("UPDATE projects SET title = $1, description = $2, manager_id = $3 WHERE id = $4", title, description, managerID, id)
 	if err != nil {
 		return err
@@ -76,7 +87,7 @@ func (pm *ProjectModel) UpdateProject(id int, title, description string, manager
 	return nil
 }
 
-func (pm *ProjectModel) DeleteProject(id int) (int, error) {
+func (pm *ProjectModelImpl) DeleteProject(id int) (int, error) {
 	row := pm.DB.QueryRow("DELETE FROM projects WHERE id = $1", id)
 	var deletedId int
 	err := row.Scan(&deletedId)
@@ -86,7 +97,7 @@ func (pm *ProjectModel) DeleteProject(id int) (int, error) {
 	return deletedId, nil
 }
 
-func (pm *ProjectModel) GetProjectTasks(id int) ([]Task, error) {
+func (pm *ProjectModelImpl) GetProjectTasks(id int) ([]Task, error) {
 	rows, err := pm.DB.Query("SELECT * FROM tasks WHERE project_id = $1", id)
 	if err != nil {
 		return nil, err
@@ -113,7 +124,7 @@ func (pm *ProjectModel) GetProjectTasks(id int) ([]Task, error) {
 	return tasks, nil
 }
 
-func (pm *ProjectModel) SearchProjectsByTitle(title string) ([]Project, error) {
+func (pm *ProjectModelImpl) SearchProjectsByTitle(title string) ([]Project, error) {
 	rows, err := pm.DB.Query("SELECT * FROM projects WHERE title = $1", title)
 	if err != nil {
 		return nil, err
@@ -140,7 +151,7 @@ func (pm *ProjectModel) SearchProjectsByTitle(title string) ([]Project, error) {
 	return projects, nil
 }
 
-func (pm *ProjectModel) SearchProjectsByManagerID(managerID int) ([]Project, error) {
+func (pm *ProjectModelImpl) SearchProjectsByManagerID(managerID int) ([]Project, error) {
 	rows, err := pm.DB.Query("SELECT * FROM projects WHERE manager_id = $1", managerID)
 	if err != nil {
 		return nil, err

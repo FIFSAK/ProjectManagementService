@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ProjectManagementService/internal/handlers"
 	"ProjectManagementService/internal/models"
 	"context"
 	"database/sql"
@@ -25,13 +26,13 @@ func main() {
 			log.Fatal("Could not close the database connection: ", err)
 		}
 	}(db)
-	userModel := models.NewUserModel(db)
-	taskModel := models.NewTaskModel(db)
-	projectModel := models.NewProjectModel(db)
+	userHandler := handlers.NewUserHandler(models.NewUserModel(db))
+	taskHandler := handlers.NewTaskHandler(models.NewTaskModel(db))
+	projectHandler := handlers.NewProjectHandler(models.NewProjectModel(db))
 
 	router := mux.NewRouter()
 
-	SetupRouter(router, userModel, taskModel, projectModel)
+	SetupRouter(router, userHandler, taskHandler, projectHandler)
 
 	port := "8080"
 	server := &http.Server{
