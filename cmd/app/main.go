@@ -34,7 +34,7 @@ func main() {
 
 	SetupRouter(router, userHandler, taskHandler, projectHandler)
 
-	port := "8080"
+	port := "4000"
 	server := &http.Server{
 		Addr:    ":" + port,
 		Handler: router,

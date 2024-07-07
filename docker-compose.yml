@@ -4,7 +4,7 @@ services:
     container_name: main_app
     build: .
     ports:
-      - "8080:8080"
+      - "4000:4000"
     depends_on:
       - db
     environment:
@@ -12,7 +12,7 @@ services:
       DB_PASSWORD: ${password}
       DB_NAME: ${dbname}
       DB_HOST: ${host}
-      DB_PORT: ${port}
+      DB_PORT: 5432
     networks:
       - project_network
 
