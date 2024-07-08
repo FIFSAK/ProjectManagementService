@@ -1,13 +1,16 @@
 package main
 
 import (
+	_ "ProjectManagementService/docs"
 	"ProjectManagementService/internal/handlers"
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"net/http"
 )
 
 func SetupRouter(router *mux.Router, userHandler *handlers.UserHandler, taskHandler *handlers.TaskHandler, projectHandler *handlers.ProjectHandler) {
 	router.HandleFunc("/health-check", handlers.HealthCheck).Methods(http.MethodGet)
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	usersRouter := router.PathPrefix("/users").Subrouter()
 

@@ -8,6 +8,15 @@ import (
 	"strconv"
 )
 
+type TaskInput struct {
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	Priority          string `json:"priority"`
+	Status            string `json:"status"`
+	ResponsibleUserID int    `json:"responsible_user_id"`
+	ProjectID         int    `json:"project_id"`
+}
+
 type TaskHandler struct {
 	TaskModel models.TaskModel
 }
@@ -18,6 +27,13 @@ func NewTaskHandler(taskModel models.TaskModel) *TaskHandler {
 	}
 }
 
+// @Summary Get all tasks
+// @Tags tasks
+// @Produce json
+// @Success 200 {array} models.Task
+// @Router /tasks [get]
+// @Failure 404 {string} string "No tasks found"
+// @Failure 500 {string} string "Internal server error"
 func (th *TaskHandler) GetAllTasksHandler(writer http.ResponseWriter, request *http.Request) {
 	tasks, err := th.TaskModel.GetTasks()
 	if err != nil {
@@ -42,6 +58,15 @@ func (th *TaskHandler) GetAllTasksHandler(writer http.ResponseWriter, request *h
 	}
 }
 
+// @Summary Create a task
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param task body TaskInput true "Task"
+// @Success 201 {string} string "Task created"
+// @Router /tasks [post]
+// @Failure 400 {string} string "Bad request"
+// @Failure 500 {string} string "Internal server error"
 func (th *TaskHandler) CreateTaskHandler(writer http.ResponseWriter, request *http.Request) {
 	var task models.Task
 	err := json.NewDecoder(request.Body).Decode(&task)
@@ -58,6 +83,14 @@ func (th *TaskHandler) CreateTaskHandler(writer http.ResponseWriter, request *ht
 
 }
 
+// @Summary Get a task by ID
+// @Tags tasks
+// @Produce json
+// @Param id path int true "Task ID"
+// @Success 200 {object} models.Task
+// @Router /tasks/{id} [get]
+// @Failure 404 {string} string "Task not found"
+// @Failure 500 {string} string "Internal server error"
 func (th *TaskHandler) GetTaskHandler(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	id, err := strconv.Atoi(vars["id"])
@@ -84,6 +117,17 @@ func (th *TaskHandler) GetTaskHandler(writer http.ResponseWriter, request *http.
 	_, err = writer.Write(jsonTask)
 }
 
+// @Summary Update a task
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path int true "Task ID"
+// @Param task body TaskInput true "Task"
+// @Success 200 {string} string "Task updated"
+// @Router /tasks/{id} [put]
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {string} string "Task not found"
+// @Failure 500 {string} string "Internal server error"
 func (th *TaskHandler) UpdateTaskHandler(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	id, err := strconv.Atoi(vars["id"])
@@ -114,6 +158,20 @@ func (th *TaskHandler) UpdateTaskHandler(writer http.ResponseWriter, request *ht
 
 }
 
+// @Summary Delete a task
+// @Tags tasks
+// @Param id path int true "Task ID"
+// @Success 200 {string} string "Task deleted"
+// @Router /tasks/{id} [delete]
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {string} string "Task not found"
+// @Failure 500 {string} string "Internal server error"
+// @Param id path int true "Task ID"
+// @Success 200 {string} string "Task deleted"
+// @Router /tasks/{id} [delete]
+// @Failure 400 {string} string "Bad request"
+// @Failure 404 {string} string "Task not found"
+// @Failure 500 {string} string "Internal server error"
 func (th *TaskHandler) DeleteTaskHandler(writer http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	id, err := strconv.Atoi(vars["id"])
@@ -133,6 +191,19 @@ func (th *TaskHandler) DeleteTaskHandler(writer http.ResponseWriter, request *ht
 	writer.WriteHeader(http.StatusOK)
 }
 
+// @Summary Search tasks
+// @Tags tasks
+// @Produce json
+// @Param title query string false "Task title"
+// @Param status query string false "Task status"
+// @Param priority query string false "Task priority"
+// @Param assignee query string false "Task assignee"
+// @Param project query string false "Task project"
+// @Success 200 {array} models.Task
+// @Router /tasks/search [get]
+// @Failure 400 {string} string "No search parameters provided"
+// @Failure 404 {string} string "No tasks found"
+// @Failure 500 {string} string "Internal server error"
 func (th *TaskHandler) SearchTasksHandler(writer http.ResponseWriter, request *http.Request) {
 	title := request.URL.Query().Get("title")
 	status := request.URL.Query().Get("status")

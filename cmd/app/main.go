@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "ProjectManagementService/docs"
 	"ProjectManagementService/internal/handlers"
 	"ProjectManagementService/internal/models"
 	"context"
@@ -14,6 +15,11 @@ import (
 	"time"
 )
 
+// @title Project Management Service API
+// version 1.0
+// @description This is project management service API
+// @host localhost:8080
+// @BasePath/
 func main() {
 
 	db, err := initializeDB()
