@@ -172,6 +172,9 @@
 ## Models Structure
 
 ```sql
+Type task_status = new | done | in_progress
+Type task_priority = high | medium | low
+
 Users {
     id: int,
     name: string,
@@ -183,8 +186,8 @@ Tasks {
     id: int,
     title: string,
     description: string,
-    priority: string,
-    status: string,
+    priority: task_priority,
+    status: task_status,
     responsible_user_id: int,
     project_id: int,
     creation_date: date,
