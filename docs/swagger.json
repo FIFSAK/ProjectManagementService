@@ -5,7 +5,8 @@
         "title": "Project Management Service API",
         "contact": {}
     },
-    "host": "localhost:8080",
+    "host": "projectmanagementservice.onrender.com",
+    "basePath": "/",
     "paths": {
         "/projects": {
             "get": {

@@ -19,7 +19,7 @@ import (
 // version 1.0
 // @description This is project management service API
 // @host projectmanagementservice.onrender.com
-// @BasePath/
+// @BasePath /
 func main() {
 
 	db, err := initializeDB()

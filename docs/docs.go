@@ -1078,8 +1078,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "",
-	Host:             "localhost:8080",
-	BasePath:         "",
+	Host:             "projectmanagementservice.onrender.com",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Project Management Service API",
 	Description:      "This is project management service API",
