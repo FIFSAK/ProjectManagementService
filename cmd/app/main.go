@@ -18,7 +18,7 @@ import (
 // @title Project Management Service API
 // version 1.0
 // @description This is project management service API
-// @host https://projectmanagementservice.onrender.com
+// @host projectmanagementservice.onrender.com
 // @BasePath/
 func main() {
 
