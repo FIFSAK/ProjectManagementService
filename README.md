@@ -210,30 +210,6 @@ Projects {
    git clone https://github.com/FIFSAK/ProjectManagementService
    cd ProjectManagementService
    ```
-replace func initializeDB() in dbconn.go with the following code:
-```go
-connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-	os.Getenv("user"), os.Getenv("password"), os.Getenv("host"),
-	os.Getenv("port"), os.Getenv("dbname"))
-db, err := sql.Open("postgres", connStr)
-if err != nil {
-	return nil, err
-}
-if err := db.Ping(); err != nil {
-	return nil, err
-}
-
-migrationUp(db)
-
-return db, nil
-```
-and in migrationUp function marked block code with the following code:
-```go
-m, err := migrate.NewWithDatabaseInstance(
-	"file:///usr/src/app/migrations",
-	"postgres", driver)
-```
-
 
 2. **Build the Docker images:**
    ```bash
