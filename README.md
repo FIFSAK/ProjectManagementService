@@ -3,9 +3,12 @@
 ## Routers
 
 ### Health Check
-
 - **Endpoint:** `GET /health-check`
     - **Response:** `OK`
+
+### Swagger
+- **Endpoint:** `GET /swagger/index.html`
+- **Response:** Swagger UI
 
 ### Get Users
 - **Endpoint:** `GET /users`
